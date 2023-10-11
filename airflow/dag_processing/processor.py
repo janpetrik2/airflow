@@ -486,6 +486,7 @@ class DagFileProcessor(LoggingMixin):
                         execution_date=next_info.logical_date,
                         timestamp=ts,
                     )
+                    sla_miss.log_url = ti.log_url
                     sla_misses.append(sla_miss)
                     Stats.incr("sla_missed", tags={"dag_id": ti.dag_id, "task_id": ti.task_id})
             if sla_misses:
@@ -512,9 +513,9 @@ class DagFileProcessor(LoggingMixin):
                     session.delete(ti)
                     session.commit()
 
-            task_list = "\n".join(sla.task_id + " on " + sla.execution_date.isoformat() for sla in slas)
+            task_list = "\n".join(sla.task_id + " on " + sla.execution_date.isoformat() + f", <a href='{sla.log_url}'>Link</a>" for sla in slas)
             blocking_task_list = "\n".join(
-                ti.task_id + " on " + ti.execution_date.isoformat() for ti in blocking_tis
+                ti.task_id + " on " + ti.execution_date.isoformat() + f", <a href='{ti.log_url}'>Link</a>" for ti in blocking_tis
             )
             # Track whether email or any alert notification sent
             # We consider email or the alert callback as notifications
